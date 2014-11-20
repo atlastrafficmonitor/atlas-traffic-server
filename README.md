@@ -16,7 +16,7 @@ atlas-traffic-server
   2. Connect to it from the client.
 
     ```javascript
-    var conn = new WebSocket("ws://192.168.50.4:8765");
+    var conn = new WebSocket("ws://INSERT_SERVER_URL_HERE:8765");
 
     conn.onopen = function (ev) {
       // do something
