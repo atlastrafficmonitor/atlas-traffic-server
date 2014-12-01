@@ -3,29 +3,34 @@ import signal
 import sys
 import time
 import websockets
+from IPython import embed
 
 @asyncio.coroutine
 def handler(websocket, path):
     while True:
+        if not websocket.open:
+            break
+
         yield from websocket.send("Hello!")
-        time.sleep(1)
+        yield from asyncio.sleep(1.0)
 
 def boot_server(host, port):
-    start_server = websockets.serve(handler, host, port)
-    asyncio.get_event_loop().run_until_complete(start_server)
-
     print('Atlas server is listening on http://', host, ':', port, sep='')
 
-def graceful_exit(signum, frame):
-    # Clean up event loop
-    asyncio.get_event_loop().stop()
-    print('\nCtrl-C (sigint) caught. Exiting...')
-    exit(1)
+    return websockets.serve(handler, host, port)
 
 def main():
-    boot_server('0.0.0.0', 8765)
-    signal.signal(signal.SIGINT, graceful_exit)
-    asyncio.get_event_loop().run_forever()
+    server = boot_server('0.0.0.0', 8765)
+    event_loop = asyncio.get_event_loop()
+
+    try:
+        event_loop.run_until_complete(server)
+        event_loop.run_forever()
+    except KeyboardInterrupt:
+        print('\nCtrl-C (SIGINT) caught. Exiting...')
+    finally:
+        server.close()
+        event_loop.close()
 
 if __name__ == "__main__":
     main()
