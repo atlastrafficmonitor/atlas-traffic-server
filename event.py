@@ -1,6 +1,16 @@
 from pymongo import MongoClient
 import time
 
+
+# Event
+# ----
+#
+# An event is the abstract interface for an event containing the information
+# necessary for the visual system. It has methods to deal with serializing the
+# data into a consumable format by the client, and logic for saving the events
+# to a persistent data store (MongoDB).
+
+
 class Event:
     client = MongoClient('atlas-installation.ianks.com', 27017)
     db = client.atlas_traffic_monitors
