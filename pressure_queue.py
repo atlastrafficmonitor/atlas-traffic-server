@@ -8,7 +8,7 @@ class PressureQueue:
         return len(self.readings) == 2
 
     def should_be_refreshed(self):
-        return _is_time_expired() and _is_odd_amt_of_readings
+        return _is_time_expired() and _is_odd_amt_of_readings()
 
     def _refresh_queue(self):
         self.readings = []
@@ -16,7 +16,9 @@ class PressureQueue:
         return true
 
     def _is_time_expired(self, event_time):
-        return event_time - datetime.timedelta(seconds=5)
+        five_secs_ago = datetime.datetime.now() - datetime.timedelta(seconds=5)
+
+        return event_time > five_secs_ago
 
     def _is_odd_amt_of_readings(self):
         length = len(self.readings)
