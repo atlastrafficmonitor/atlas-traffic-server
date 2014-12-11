@@ -30,7 +30,7 @@ def handler(websocket, path):
             yield from websocket.send(serialized_event)
 
             # event.mongoify()
-            # yield from asyncio.sleep(0.2)
+            yield from asyncio.sleep(0.1)
 
 
 @asyncio.coroutine
