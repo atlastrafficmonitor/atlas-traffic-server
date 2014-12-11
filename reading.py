@@ -11,13 +11,6 @@ import datetime
 
 
 class Reading:
-    def __init__(self, raw):
-        self.pressure_reading = pressure_reading_from_raw(raw)
-        self.location = location_from_raw(location)
+    def __init__(self, location):
+        self.location = location
         self.time = datetime.datetime.now()
-
-    def pressure_reading_from_raw(raw):
-        pass
-
-    def location_from_raw(raw):
-        pass

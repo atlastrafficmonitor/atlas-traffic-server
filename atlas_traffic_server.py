@@ -8,12 +8,17 @@ import websockets
 import os
 import RPi.GPIO as GPIO
 
+from pressure_queue import PressureQueue
 from event import Event
+from reading import Reading
 
 
 # Main asynchronous routines for data acquisition and dispersion.
 # ===============================================================
 
+back_2 = PressureQueue()
+
+pressure_queues = [back_2]
 
 @asyncio.coroutine
 def handler(websocket, path):
@@ -32,13 +37,14 @@ def handler(websocket, path):
 
 
 @asyncio.coroutine
-def pressure_data_handler(location, pin):
+def pressure_data_handler(location, pin, pressure_queue):
     GPIO.setup(pin, GPIO.IN)
 
     while True:
         if GPIO.input(pin) == 1:
             print(location)
-            yield from asyncio.sleep(1.0)
+            pressure_queue.append(Reading(location))
+            yield from asyncio.sleep(0.2)
 
 
 # ===============================================================
@@ -59,7 +65,7 @@ def main():
     event_loop = asyncio.get_event_loop()
     tasks = [
             server,
-            asyncio.async(pressure_data_handler("front_door", 35))]
+            asyncio.async(pressure_data_handler("front_door", 35, back_2))]
 
     try:
         event_loop.run_until_complete(asyncio.wait(tasks))
