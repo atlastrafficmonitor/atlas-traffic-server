@@ -16,9 +16,6 @@ from reading import Reading
 # Main asynchronous routines for data acquisition and dispersion.
 # ===============================================================
 
-back_2 = PressureQueue()
-
-pressure_queues = [back_2]
 
 @asyncio.coroutine
 def handler(websocket, path):
@@ -26,20 +23,19 @@ def handler(websocket, path):
         if not websocket.open:
             break
 
-        for queue in pressure_queues:
-            if queue.ready_for_event_creation():
-                event = Event(queue.readings)
-                serialized_event = json.dumps(event.serialize())
+        if GPIO.input(35) == 1:
+            event = Event()
+            serialized_event = json.dumps(event.serialize())
 
-                yield from websocket.send(serialized_event)
+            yield from websocket.send(serialized_event)
 
-                event.mongoify()
+            event.mongoify()
+
+            # yield from asyncio.sleep(0.2)
 
 
 @asyncio.coroutine
 def pressure_data_handler(location, pin, pressure_queue):
-    GPIO.setup(pin, GPIO.IN)
-
     while True:
         if GPIO.input(pin) == 1:
             print(location)
@@ -58,14 +54,13 @@ def boot_server(host, port):
 def init_gpio():
     GPIO.setmode(GPIO.BOARD)
     GPIO.setwarnings(False)
+    GPIO.setup(35, GPIO.IN)
 
 def main():
     init_gpio()
     server = boot_server('0.0.0.0', 8765)
     event_loop = asyncio.get_event_loop()
-    tasks = [
-            server,
-            asyncio.async(pressure_data_handler("front_door", 35, back_2))]
+    tasks = [server]
 
     try:
         event_loop.run_until_complete(asyncio.wait(tasks))
