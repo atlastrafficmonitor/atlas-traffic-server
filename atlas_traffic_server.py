@@ -5,6 +5,8 @@ import signal
 import sys
 import time
 import websockets
+import os
+import RPi.GPIO as GPIO
 
 from event import Event
 
@@ -30,10 +32,13 @@ def handler(websocket, path):
 
 
 @asyncio.coroutine
-def pressure_data_handler(location):
+def pressure_data_handler(location, pin):
+    GPIO.setup(pin, GPIO.IN)
+
     while True:
-        print(location)
-        yield from asyncio.sleep(1.0)
+        if GPIO.input(pin) == 1:
+            print(location)
+            yield from asyncio.sleep(1.0)
 
 
 # ===============================================================
@@ -44,14 +49,17 @@ def boot_server(host, port):
 
     return websockets.serve(handler, host, port)
 
+def init_gpio():
+    GPIO.setmode(GPIO.BOARD)
+    GPIO.setwarnings(False)
+
 def main():
+    init_gpio()
     server = boot_server('0.0.0.0', 8765)
     event_loop = asyncio.get_event_loop()
     tasks = [
             server,
-            asyncio.async(pressure_data_handler("front_door")),
-            asyncio.async(pressure_data_handler("back_hall")),
-            asyncio.async(pressure_data_handler("pekoe"))]
+            asyncio.async(pressure_data_handler("front_door", 35))]
 
     try:
         event_loop.run_until_complete(asyncio.wait(tasks))
