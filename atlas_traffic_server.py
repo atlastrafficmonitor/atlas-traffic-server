@@ -29,8 +29,7 @@ def handler(websocket, path):
 
             yield from websocket.send(serialized_event)
 
-            event.mongoify()
-
+            # event.mongoify()
             # yield from asyncio.sleep(0.2)
 
 
